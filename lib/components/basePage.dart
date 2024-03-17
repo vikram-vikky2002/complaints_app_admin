@@ -31,8 +31,8 @@ class _BackgroundPageState extends State<BackgroundPage> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(137, 91, 6, 0),
-                  Color.fromARGB(126, 16, 0, 86),
+                  Color.fromARGB(169, 74, 5, 0),
+                  Color.fromARGB(174, 11, 0, 62),
                 ],
               ),
             ),

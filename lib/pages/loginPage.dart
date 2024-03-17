@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:complaint_app_admin/components/basePage.dart';
 import 'package:complaint_app_admin/pages/homePage.dart';
-import 'package:complaint_app_admin/pages/profilePage.dart';
 import 'package:complaint_app_admin/services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +81,15 @@ class _LoginPageState extends State<LoginPage> {
                       child: Image.asset('assets/icons/PoliceLogo.png'),
                     ),
                   ),
-                  const SizedBox(height: 50),
+                  const Text(
+                    'ADMIN',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: 'Ethnocentric',
+                      fontSize: 26,
+                    ),
+                  ),
+                  // const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.all(10),
                     child: InkWell(
