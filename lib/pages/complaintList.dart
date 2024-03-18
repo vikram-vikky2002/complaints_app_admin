@@ -3,6 +3,7 @@ import 'package:complaint_app_admin/components/basePage.dart';
 import 'package:complaint_app_admin/components/tagContainer.dart';
 import 'package:complaint_app_admin/pages/showComplaint.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ComplaintsPage extends StatefulWidget {
   const ComplaintsPage({super.key});
@@ -104,7 +105,10 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                               Map<String, dynamic> data =
                                   filteredEvents[index].data();
                               return Padding(
-                                padding: const EdgeInsets.all(15),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 15,
+                                  vertical: 4,
+                                ),
                                 child: InkWell(
                                   onTap: () {
                                     Navigator.push(
@@ -147,7 +151,21 @@ class _ComplaintsPageState extends State<ComplaintsPage> {
                                               color: Colors.white,
                                             ),
                                           ),
-                                          Text('${data["status"]}')
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                DateFormat('dd-MM-yyyy').format(
+                                                  data["date"].toDate(),
+                                                ),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          )
                                         ],
                                       ),
                                     ),

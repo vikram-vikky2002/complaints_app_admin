@@ -165,6 +165,39 @@ class _ComplaintDetailsState extends State<ComplaintDetails> {
               Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          color: Colors.white,
+                        ),
+                        Text(
+                          '  Location',
+                          textAlign: TextAlign.justify,
+                          style: timeStyle,
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: Center(
+                        child: Text(
+                          '${widget.data['location'] ?? "..."}',
+                          textAlign: TextAlign.justify,
+                          style: timeStyle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
                 child: Text(
                   'Submitted on : ${DateFormat('dd/MM/yyyy hh:mm a').format(widget.data['date'].toDate())}',
                   textAlign: TextAlign.justify,
