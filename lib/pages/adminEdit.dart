@@ -34,14 +34,26 @@ class _AdminEditPageState extends State<AdminEditPage> {
   }
 
   removeAdmin(id) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('admins')
-          .doc(id)
-          .delete()
-          .then((value) {
+    if (user!.email != id) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('admins')
+            .doc(id)
+            .delete()
+            .then((value) {
+          Fluttertoast.showToast(
+            msg: 'Admin access removed',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 2,
+            backgroundColor: Colors.redAccent,
+            textColor: Colors.black,
+            fontSize: 16.0,
+          );
+        });
+      } on FirebaseException catch (error) {
         Fluttertoast.showToast(
-          msg: 'Admin access removed',
+          msg: 'Error : $error',
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 2,
@@ -49,10 +61,10 @@ class _AdminEditPageState extends State<AdminEditPage> {
           textColor: Colors.black,
           fontSize: 16.0,
         );
-      });
-    } on FirebaseException catch (error) {
+      }
+    } else {
       Fluttertoast.showToast(
-        msg: 'Error : $error',
+        msg: 'Cannot Revoke your own Access',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 2,

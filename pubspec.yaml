@@ -45,6 +45,8 @@ dependencies:
   rounded_loading_button: ^2.1.0
   fluttertoast: ^8.2.4
   firebase_messaging: ^14.7.20
+  connectivity_plus: ^6.0.1
+  internet_connection_checker: ^1.0.0+1
 
 dev_dependencies:
   flutter_test:

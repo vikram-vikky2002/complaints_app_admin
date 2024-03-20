@@ -1,11 +1,18 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:complaint_app_admin/components/basePage.dart';
 import 'package:complaint_app_admin/pages/adminEdit.dart';
 import 'package:complaint_app_admin/pages/complaintList.dart';
+import 'package:complaint_app_admin/pages/errorPage.dart';
 import 'package:complaint_app_admin/pages/profilePage.dart';
 import 'package:complaint_app_admin/services/auth.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 // import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 
@@ -19,7 +26,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? _timeString;
   User? user;
-  // Position? location;
+  late StreamSubscription internet;
+  var isDeviceConnected = false, isAlertSet = false;
 
   void _getTime() {
     final DateTime now = DateTime.now();
@@ -29,6 +37,81 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  checkUser(user) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('admins')
+          .doc(user!.email)
+          .get()
+          .then((doc) {
+        if (doc.exists) {
+          if (kDebugMode) {
+            print('Admin...');
+          }
+        } else {
+          if (kDebugMode) {
+            print('user: ${user.email}');
+            print('Not Admin...');
+          }
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ErrorPage(),
+            ),
+          );
+        }
+      });
+    } on FirebaseException catch (error) {
+      Fluttertoast.showToast(
+        msg: 'Error : $error',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+    }
+  }
+
+  showDialogBox() => showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text('No Internet Connection'),
+          content: const Text('Check your internet connection'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context, 'cancel');
+                setState(() {
+                  isAlertSet = false;
+                });
+                isDeviceConnected =
+                    await InternetConnectionChecker().hasConnection;
+                if (!isDeviceConnected) {
+                  showDialogBox();
+                  setState(() {
+                    isAlertSet = true;
+                  });
+                }
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+
+  getConnectivity() =>
+      internet = Connectivity().onConnectivityChanged.listen((event) async {
+        isDeviceConnected = await InternetConnectionChecker().hasConnection;
+        if (!isDeviceConnected && isAlertSet == false) {
+          showDialogBox();
+          setState(() {
+            isAlertSet = true;
+          });
+        }
+      });
+
   @override
   void initState() {
     super.initState();
@@ -36,50 +119,10 @@ class _HomePageState extends State<HomePage> {
     // getLocation();
     Timer.periodic(const Duration(seconds: 1), (Timer t) => _getTime());
     user = FireAuth().currentUser;
+    checkUser(user);
+    getConnectivity();
     super.initState();
   }
-
-  // getLocation() async {
-  //   location = await _determinePosition();
-  //   print("Location : $location");
-  // }
-
-  // Future<Position> _determinePosition() async {
-  //   bool serviceEnabled;
-  //   LocationPermission permission;
-
-  //   // Test if location services are enabled.
-  //   serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  //   if (!serviceEnabled) {
-  //     // Location services are not enabled don't continue
-  //     // accessing the position and request users of the
-  //     // App to enable the location services.
-  //     return Future.error('Location services are disabled.');
-  //   }
-
-  //   permission = await Geolocator.checkPermission();
-  //   if (permission == LocationPermission.denied) {
-  //     permission = await Geolocator.requestPermission();
-  //     if (permission == LocationPermission.denied) {
-  //       // Permissions are denied, next time you could try
-  //       // requesting permissions again (this is also where
-  //       // Android's shouldShowRequestPermissionRationale
-  //       // returned true. According to Android guidelines
-  //       // your App should show an explanatory UI now.
-  //       return Future.error('Location permissions are denied');
-  //     }
-  //   }
-
-  //   if (permission == LocationPermission.deniedForever) {
-  //     // Permissions are denied forever, handle appropriately.
-  //     return Future.error(
-  //         'Location permissions are permanently denied, we cannot request permissions.');
-  //   }
-
-  //   // When we reach here, permissions are granted and we can
-  //   // continue accessing the position of the device.
-  //   return await Geolocator.getCurrentPosition();
-  // }
 
   String _formatDateTime(DateTime dateTime) {
     return DateFormat('dd-MM-yyyy\nhh:mm:ss a').format(dateTime);
@@ -304,20 +347,6 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-
-              // const Padding(
-              //   padding: EdgeInsets.all(13),
-              //   child: Text(
-              //     'Made by AppAlchemy 📱',
-              //     textAlign: TextAlign.center,
-              //     softWrap: true,
-              //     style: TextStyle(
-              //       color: Colors.white,
-              //       fontWeight: FontWeight.bold,
-              //       fontSize: 15,
-              //     ),
-              //   ),
-              // )
             ],
           ),
         ),

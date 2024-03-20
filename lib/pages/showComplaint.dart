@@ -35,6 +35,12 @@ class _ComplaintDetailsState extends State<ComplaintDetails> {
       fontSize: 13,
     );
 
+    var locationStyle = const TextStyle(
+      color: Colors.white,
+      // fontFamily: 'Fonarto',
+      fontSize: 15,
+    );
+
     return BackgroundPage(
       child: SafeArea(
         child: SingleChildScrollView(
@@ -170,14 +176,14 @@ class _ComplaintDetailsState extends State<ComplaintDetails> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.location_on,
-                          color: Colors.white,
-                        ),
+                        // const Icon(
+                        //   Icons.location_on,
+                        //   color: Colors.white,
+                        // ),
                         Text(
-                          '  Location',
+                          '📍 Location',
                           textAlign: TextAlign.justify,
-                          style: timeStyle,
+                          style: locationStyle,
                         ),
                       ],
                     ),
@@ -187,7 +193,7 @@ class _ComplaintDetailsState extends State<ComplaintDetails> {
                         child: Text(
                           '${widget.data['location'] ?? "..."}',
                           textAlign: TextAlign.justify,
-                          style: timeStyle,
+                          style: locationStyle,
                         ),
                       ),
                     ),

@@ -1,9 +1,17 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:complaint_app_admin/components/basePage.dart';
+import 'package:complaint_app_admin/pages/errorPage.dart';
 import 'package:complaint_app_admin/pages/homePage.dart';
 import 'package:complaint_app_admin/services/auth.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,38 +26,89 @@ class _LoginPageState extends State<LoginPage> {
   String errorText = "";
   bool valid = false;
   bool admin = false;
+  late StreamSubscription internet;
+  var isDeviceConnected = false, isAlertSet = false;
 
-  // checkUser(user) async {
-  //   try {
-  //     await FirebaseFirestore.instance
-  //         .collection('admins')
-  //         .doc(user!.email)
-  //         .get()
-  //         .then((doc) {
-  //       if (doc.exists) {
-  //         print('Admin...');
-  //         setState(() {
-  //           admin = true;
-  //         });
-  //       } else {
-  //         print('Not Admin...');
-  //         setState(() {
-  //           admin = false;
-  //         });
-  //       }
-  //     });
-  //   } on FirebaseException catch (error) {
-  //     Fluttertoast.showToast(
-  //       msg: 'Error : $error',
-  //       toastLength: Toast.LENGTH_SHORT,
-  //       gravity: ToastGravity.BOTTOM,
-  //       timeInSecForIosWeb: 2,
-  //       backgroundColor: Colors.redAccent,
-  //       textColor: Colors.black,
-  //       fontSize: 16.0,
-  //     );
-  //   }
-  // }
+  @override
+  void initState() {
+    super.initState();
+    getConnectivity();
+  }
+
+  showDialogBox() => showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text('No Internet Connection'),
+          content: const Text('Check your internet connection'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context, 'cancel');
+                setState(() {
+                  isAlertSet = false;
+                });
+                isDeviceConnected =
+                    await InternetConnectionChecker().hasConnection;
+                if (!isDeviceConnected) {
+                  showDialogBox();
+                  setState(() {
+                    isAlertSet = true;
+                  });
+                }
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+
+  getConnectivity() =>
+      internet = Connectivity().onConnectivityChanged.listen((event) async {
+        isDeviceConnected = await InternetConnectionChecker().hasConnection;
+        if (!isDeviceConnected && isAlertSet == false) {
+          showDialogBox();
+          setState(() {
+            isAlertSet = true;
+          });
+        }
+      });
+
+  checkUser(user) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('admins')
+          .doc(user!.email)
+          .get()
+          .then((doc) {
+        if (doc.exists) {
+          if (kDebugMode) {
+            print('Admin...');
+          }
+        } else {
+          if (kDebugMode) {
+            print('user: ${user.email}');
+            print('Not Admin...');
+          }
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ErrorPage(),
+            ),
+          );
+        }
+      });
+    } on FirebaseException catch (error) {
+      Fluttertoast.showToast(
+        msg: 'Error : $error',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.redAccent,
+        textColor: Colors.black,
+        fontSize: 16.0,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -138,17 +197,25 @@ class _LoginPageState extends State<LoginPage> {
                                     .update({
                                   'lastSignin': DateTime.now(),
                                 });
-                                print("Exist..");
+                                if (kDebugMode) {
+                                  print("Exist..");
+                                }
                               } else {
                                 await FirebaseFirestore.instance
                                     .collection('users')
                                     .doc(user.email)
                                     .set({});
-                                print("New doc Created..");
+                                if (kDebugMode) {
+                                  print("New doc Created..");
+                                }
                               }
+                            }).whenComplete(() {
+                              checkUser(user);
                             });
                           } on FirebaseException catch (error) {
-                            print("Errro : $error");
+                            if (kDebugMode) {
+                              print("Errro : $error");
+                            }
                           }
 
                           Navigator.pop(context);

@@ -1,11 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:complaint_app_admin/components/basePage.dart';
 import 'package:complaint_app_admin/components/registeredComplaints.dart';
-import 'package:complaint_app_admin/pages/errorPage.dart';
 import 'package:complaint_app_admin/services/auth.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required userData});
@@ -22,43 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
 
     user = FireAuth().currentUser;
-    checkUser(user);
     // FireAuth().signOut();
-  }
-
-  checkUser(user) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('admins')
-          .doc(user!.email)
-          .get()
-          .then((doc) {
-        if (doc.exists) {
-          print('Admin...');
-        } else {
-          print('user: ${user.email}');
-          print('Not Admin...');
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ErrorPage(),
-            ),
-          ).then((value) {
-            FireAuth().signOut();
-          });
-        }
-      });
-    } on FirebaseException catch (error) {
-      Fluttertoast.showToast(
-        msg: 'Error : $error',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 2,
-        backgroundColor: Colors.redAccent,
-        textColor: Colors.black,
-        fontSize: 16.0,
-      );
-    }
   }
 
   @override
